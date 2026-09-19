@@ -69,7 +69,7 @@ public class Estoque {
         System.out.println("Digite o nome do produto: ");
         produto.setNomeProduto(scanner.nextLine());
 
-        System.out.println("Digite a quantidade do produto: ");
+        System.out.println("Digite o total do produto: ");
         int quantidade = scanner.nextInt();
 
         while (quantidade < 0) {
