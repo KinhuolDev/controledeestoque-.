@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
 
 public class Estoque {
@@ -16,6 +15,36 @@ public class Estoque {
 
         int opcao = 0;
 
+
+
+        comandosPorNumero.put(1, (x,y) -> {
+            Produto produto = cadastrarProduto(y);
+            x.add(produto);
+        });
+
+        comandosPorNumero.put(2, (x,y) -> {
+            if (x.isEmpty()) {
+                System.out.println("Nenhum produto cadastrado");
+            } else {
+                listarProdutos(x);
+            }
+        });
+
+        comandosPorNumero.put(3, (ignore,ignore2) -> {
+            System.out.println("Saindo..");
+        });
+
+        comandosPorNumero.put(4, Estoque::buscarProduto);
+        comandosPorNumero.put(5, Estoque::excluirProduto);
+        comandosPorNumero.put(6, Estoque::alterarQuantidade);
+        comandosPorNumero.put(7, Estoque::alterarPreco);
+        comandosPorNumero.put(8, Estoque::alterarNomeProduto);
+        comandosPorNumero.put(9, (x,y) -> {
+            x.clear();
+            System.out.println("Estoque limpo!");
+        });
+
+
         while (opcao != 3) {
 
             System.out.println("===== ESTOQUE ======");
@@ -25,35 +54,13 @@ public class Estoque {
             System.out.println("4 - Buscar produto");
             System.out.println("5 - Excluir Produto");
             System.out.println("6 - Alterar quantidade");
-            System.out.println("7 - Alterar Validade");
+            System.out.println("7 - Alterar Preço");
             System.out.println("8 - Alterar nome");
+            System.out.println("9 - Limpar estoque");
 
             System.out.println("Escolha uma opção: ");
             opcao = scanner.nextInt();
             scanner.nextLine();
-
-            comandosPorNumero.put(1, (x,y) -> {
-                Produto produto = cadastrarProduto(scanner);
-                produtos.add(produto);
-            });
-
-            comandosPorNumero.put(2, (x,y) -> {
-                if (produtos.isEmpty()) {
-                    System.out.println("Nenhum produto cadastrado");
-                } else {
-                    listarProdutos(produtos);
-                }
-            });
-
-            comandosPorNumero.put(3, (ignore,ignore2) -> {
-                System.out.println("Saindo..");
-            });
-
-            comandosPorNumero.put(4, Estoque::buscarProduto);
-            comandosPorNumero.put(5, Estoque::excluirProduto);
-            comandosPorNumero.put(6, Estoque::alterarQuantidade);
-            comandosPorNumero.put(7, Estoque::alterarValidade);
-            comandosPorNumero.put(8, Estoque::alterarNomeProduto);
 
             comandosPorNumero.getOrDefault(opcao, (ignore, ignore2) -> {
                 System.out.println("Opção invalida");
@@ -62,26 +69,115 @@ public class Estoque {
 
     }
 
+    public static  int lerInteiro(Scanner scanner) {
+
+        int quantidade = scanner.nextInt();
+        boolean valido = false;
+        String texto;
+
+        while (!valido) {
+            texto = scanner.nextLine();
+            texto = texto.trim();
+
+            try {
+                quantidade = Integer.parseInt(texto);
+
+                if (quantidade < 0) {
+                    System.out.println("Digite um numero válido");
+                } else {
+                    valido = true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Numero inválido, tente novamente!");
+            }
+
+        }
+
+        System.out.println("Digite o preço do produto: ");
+
+
+        valido = false;
+        double preco = 0;
+
+        while (!valido) {
+            texto = scanner.nextLine();
+            texto = texto.trim();
+            texto = texto.replace(",",".");
+
+            try {
+                preco = Double.parseDouble(texto);
+
+                if  (preco < 0) {
+                    System.out.println("Preço invalido");
+                } else {
+                    valido = true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Preço inválido!");
+            }
+        }
+
+        produto.setPreco(preco);
+        System.out.println("====PRODUTO CADASTADO====");
+
+    }
+
     public static Produto cadastrarProduto(Scanner scanner) {
         Produto produto = new Produto();
-
-
         System.out.println("Digite o nome do produto: ");
         produto.setNomeProduto(scanner.nextLine());
 
         System.out.println("Digite o total do produto: ");
-        int quantidade = scanner.nextInt();
+        int quantidade = 0;
+        boolean valido = false;
+        String texto;
 
-        while (quantidade < 0) {
-            System.out.println("Número Invalido");
-            quantidade = scanner.nextInt();
+        while (!valido) {
+             texto = scanner.nextLine();
+             texto = texto.trim();
+
+            try {
+                quantidade = Integer.parseInt(texto);
+
+                if (quantidade < 0) {
+                    System.out.println("Digite um numero válido");
+                } else {
+                    valido = true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Numero inválido, tente novamente!");
+            }
+
         }
 
         produto.setQuantidade(quantidade);
-        scanner.nextLine();
 
-        System.out.println("Digite a validade do produto: ");
-        produto.setValidade(scanner.nextLine());
+
+        System.out.println("Digite o preço do produto: ");
+
+
+        valido = false;
+        double preco = 0;
+
+        while (!valido) {
+             texto = scanner.nextLine();
+             texto = texto.trim();
+             texto = texto.replace(",",".");
+
+             try {
+                 preco = Double.parseDouble(texto);
+
+                 if  (preco < 0) {
+                     System.out.println("Preço invalido");
+                 } else {
+                     valido = true;
+                 }
+             } catch (NumberFormatException e) {
+                 System.out.println("Preço inválido!");
+             }
+        }
+
+        produto.setPreco(preco);
         System.out.println("====PRODUTO CADASTADO====");
 
         return produto;
@@ -92,7 +188,7 @@ public class Estoque {
         for (Produto produto : produtos) {
             System.out.println("Produto: " + produto.getNomeProduto());
             System.out.println("Quantidade: " + produto.getQuantidade());
-            System.out.println("Validade: " + produto.getValidade());
+            System.out.println("Preço: " + produto.getPreco());
         }
     }
 
@@ -107,7 +203,7 @@ public class Estoque {
                 System.out.println("Produto encontrado!");
                 System.out.println("Produto: " + produto.getNomeProduto());
                 System.out.println("Quantidade: " + produto.getQuantidade());
-                System.out.println("Validade: " + produto.getValidade());
+                System.out.println("Preço: " + produto.getPreco());
             }
 
         }
@@ -169,9 +265,9 @@ public class Estoque {
 
     }
 
-    public static void alterarValidade(ArrayList<Produto> produtos, Scanner scanner) {
+    public static void alterarPreco(ArrayList<Produto> produtos, Scanner scanner) {
 
-        System.out.println("Qual produto deseja alterar a validade? ");
+        System.out.println("Qual produto deseja alterar o preço? ");
         String buscaProduto = scanner.nextLine();
         boolean encontrado = false;
 
@@ -179,11 +275,11 @@ public class Estoque {
 
             if (produto.getNomeProduto().equals(buscaProduto)) {
                 encontrado = true;
-                System.out.println("A validade atual é: " + produto.getValidade());
-                System.out.println("Digite a nova validade: ");
-                String novaValidade = scanner.nextLine();
-                produto.setValidade(novaValidade);
-                System.out.println("A nova validade é: " + produto.getValidade());
+                System.out.println("O preço atual é: " + produto.getPreco());
+                System.out.println("Digite o novo preço: ");
+                Double novoPreco = scanner.nextDouble();
+                produto.setPreco(novoPreco);
+                System.out.println("O novo preço é: " + produto.getPreco());
             }
 
         }
@@ -224,7 +320,7 @@ public class Estoque {
                 return produto;
             }
         }
-            return null;
+        return null;
 
     }
 }
