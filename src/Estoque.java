@@ -18,7 +18,7 @@ public class Estoque {
 
 
         comandosPorNumero.put(1, (x,y) -> {
-            Produto produto = cadastrarProduto(y);
+            Produto produto = cadastrarProduto(x,y);
             x.add(produto);
         });
 
@@ -59,8 +59,7 @@ public class Estoque {
             System.out.println("9 - Limpar estoque");
 
             System.out.println("Escolha uma opção: ");
-            opcao = scanner.nextInt();
-            scanner.nextLine();
+            opcao = lerOpcaoMenu(scanner);
 
             comandosPorNumero.getOrDefault(opcao, (ignore, ignore2) -> {
                 System.out.println("Opção invalida");
@@ -69,9 +68,35 @@ public class Estoque {
 
     }
 
-    public static  int lerInteiro(Scanner scanner) {
+    public static final int MAX_OPCOES_MENU = 9;
 
-        int quantidade = scanner.nextInt();
+    public static int lerOpcaoMenu(Scanner scanner) {
+        int opcao = 0;
+        boolean valido = false;
+        String texto;
+
+        while (!valido) {
+            texto = scanner.nextLine();
+            texto = texto.trim();
+
+            try {
+                opcao = Integer.parseInt(texto);
+
+                if (opcao >=1 && opcao <= MAX_OPCOES_MENU) {
+                    valido = true;
+                } else {
+                    System.out.println("Numero inválido, tente novamente!");
+                }
+            } catch (NumberFormatException e) {
+                 System.out.println("Opção inválida, tente novamente!");
+            }
+        } return opcao;
+    }
+
+
+    public static  int lerQuantidade(Scanner scanner) {
+
+        int quantidade = 0;
         boolean valido = false;
         String texto;
 
@@ -92,22 +117,24 @@ public class Estoque {
             }
 
         }
+        return quantidade;
+    }
 
-        System.out.println("Digite o preço do produto: ");
+    public static double lerPreco (Scanner scanner) {
 
-
-        valido = false;
         double preco = 0;
+        boolean valido = false;
+        String texto;
 
         while (!valido) {
             texto = scanner.nextLine();
             texto = texto.trim();
-            texto = texto.replace(",",".");
+            texto = texto.replace(",", ".");
 
             try {
                 preco = Double.parseDouble(texto);
 
-                if  (preco < 0) {
+                if (preco < 0) {
                     System.out.println("Preço invalido");
                 } else {
                     valido = true;
@@ -116,73 +143,54 @@ public class Estoque {
                 System.out.println("Preço inválido!");
             }
         }
-
-        produto.setPreco(preco);
-        System.out.println("====PRODUTO CADASTADO====");
-
+        return preco;
     }
 
-    public static Produto cadastrarProduto(Scanner scanner) {
-        Produto produto = new Produto();
+    public static String lerNomeProduto( ArrayList<Produto> produtos, Scanner scanner) {
         System.out.println("Digite o nome do produto: ");
-        produto.setNomeProduto(scanner.nextLine());
+        String nome = scanner.nextLine().trim();
+
+
+        while (nome.isEmpty() || produtoExistente(produtos, nome)) {
+            if (nome.isEmpty()) {
+                System.out.println("O nome do produto não pode ficar vazio!");
+                nome = scanner.nextLine().trim();
+            } else {
+                System.out.println("Este produto já está cadastrado. Digite outro nome: ");
+                nome = scanner.nextLine().trim();
+            }
+        }
+
+     return nome;
+    }
+
+
+    public static Produto cadastrarProduto( ArrayList<Produto> produtos, Scanner scanner) {
+        Produto produto = new Produto();
+        String nome = lerNomeProduto(produtos, scanner);
+        produto.setNomeProduto(nome);
 
         System.out.println("Digite o total do produto: ");
-        int quantidade = 0;
-        boolean valido = false;
-        String texto;
-
-        while (!valido) {
-             texto = scanner.nextLine();
-             texto = texto.trim();
-
-            try {
-                quantidade = Integer.parseInt(texto);
-
-                if (quantidade < 0) {
-                    System.out.println("Digite um numero válido");
-                } else {
-                    valido = true;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Numero inválido, tente novamente!");
-            }
-
-        }
-
+        int quantidade = lerQuantidade(scanner);
         produto.setQuantidade(quantidade);
 
-
         System.out.println("Digite o preço do produto: ");
-
-
-        valido = false;
-        double preco = 0;
-
-        while (!valido) {
-             texto = scanner.nextLine();
-             texto = texto.trim();
-             texto = texto.replace(",",".");
-
-             try {
-                 preco = Double.parseDouble(texto);
-
-                 if  (preco < 0) {
-                     System.out.println("Preço invalido");
-                 } else {
-                     valido = true;
-                 }
-             } catch (NumberFormatException e) {
-                 System.out.println("Preço inválido!");
-             }
-        }
-
+        double preco = lerPreco(scanner);
         produto.setPreco(preco);
         System.out.println("====PRODUTO CADASTADO====");
 
         return produto;
     }
+    public static boolean produtoExistente(ArrayList<Produto> produtos, String nomeDigitado) {
 
+        for (Produto produtoExistente : produtos) {
+            if (nomeDigitado.equalsIgnoreCase(produtoExistente.getNomeProduto())) {
+                return true;
+
+            }
+
+        } return false;
+    }
     public static void listarProdutos(ArrayList<Produto> produtos) {
 
         for (Produto produto : produtos) {
@@ -194,16 +202,17 @@ public class Estoque {
 
     public static void buscarProduto(ArrayList<Produto> produtos, Scanner scanner) {
         System.out.println("Digite o produto que deseja buscar: ");
-        String buscaProduto = scanner.nextLine();
+        String buscaProduto = scanner.nextLine().trim();
         boolean encontrado = false;
 
         for (Produto produto : produtos) {
-            if (produto.getNomeProduto().equals(buscaProduto)) {
+            if (produto.getNomeProduto().equalsIgnoreCase(buscaProduto)) {
                 encontrado = true;
                 System.out.println("Produto encontrado!");
                 System.out.println("Produto: " + produto.getNomeProduto());
                 System.out.println("Quantidade: " + produto.getQuantidade());
                 System.out.println("Preço: " + produto.getPreco());
+                break;
             }
 
         }
@@ -213,14 +222,14 @@ public class Estoque {
 
     public static void excluirProduto(ArrayList<Produto> produtos, Scanner scanner) {
         System.out.println("Digite o produto que deseja excluir: ");
-        String buscaProduto = scanner.nextLine();
+        String buscaProduto = scanner.nextLine().trim();
         boolean encontrado = false;
 
         for (int i = 0; i < produtos.size(); i++) {
 
             Produto produto = produtos.get(i);
 
-            if (produto.getNomeProduto().equals(buscaProduto)) {
+            if (produto.getNomeProduto().equalsIgnoreCase(buscaProduto)) {
                 encontrado = true;
                 produtos.remove(i);
                 i--;
@@ -233,26 +242,20 @@ public class Estoque {
             System.out.println("Produto não encontrado!");
         }
     }
-
     public static void alterarQuantidade(ArrayList<Produto> produtos, Scanner scanner) {
 
         System.out.println("Digite o produto que deseja alterar a quantidade: ");
-        String buscaProduto = scanner.nextLine();
+        String buscaProduto = scanner.nextLine().trim();
         boolean encontrado = false;
 
         for (Produto produto : produtos) {
 
-            if (produto.getNomeProduto().equals(buscaProduto)) {
+            if (produto.getNomeProduto().equalsIgnoreCase(buscaProduto)) {
                 encontrado = true;
                 System.out.println("A quantidade atual é de: " + produto.getQuantidade());
                 System.out.println("Digite a nova quantidade: ");
-                int novaQuantidade = scanner.nextInt();
 
-                while (novaQuantidade < 0) {
-                    System.out.println("Número Invalido");
-                    novaQuantidade = scanner.nextInt();
-                }
-
+                int novaQuantidade = lerQuantidade(scanner);
                 produto.setQuantidade(novaQuantidade);
                 System.out.println("A nova quantidade é de: " + produto.getQuantidade());
                 break;
@@ -265,19 +268,20 @@ public class Estoque {
 
     }
 
+
     public static void alterarPreco(ArrayList<Produto> produtos, Scanner scanner) {
 
         System.out.println("Qual produto deseja alterar o preço? ");
-        String buscaProduto = scanner.nextLine();
+        String buscaProduto = scanner.nextLine().trim();
         boolean encontrado = false;
 
         for (Produto produto : produtos) {
 
-            if (produto.getNomeProduto().equals(buscaProduto)) {
+            if (produto.getNomeProduto().equalsIgnoreCase(buscaProduto)) {
                 encontrado = true;
                 System.out.println("O preço atual é: " + produto.getPreco());
                 System.out.println("Digite o novo preço: ");
-                Double novoPreco = scanner.nextDouble();
+                double novoPreco = lerPreco(scanner);
                 produto.setPreco(novoPreco);
                 System.out.println("O novo preço é: " + produto.getPreco());
             }
@@ -290,21 +294,19 @@ public class Estoque {
 
     public static void alterarNomeProduto(ArrayList<Produto> produtos, Scanner scanner) {
         System.out.println("Qual produto deseja alterar o nome? ");
-        String buscaProduto = scanner.nextLine();
+        String nome = scanner.nextLine().trim();
         boolean encontrado = false;
 
         for (Produto produto : produtos) {
-
-            if (produto.getNomeProduto().equals(buscaProduto)) {
+        
+                if (produto.getNomeProduto().equalsIgnoreCase(nome))
                 encontrado = true;
-                System.out.println("O nome atual cadastrado é: " + produto.getNomeProduto());
                 System.out.println("Digite o novo nome: ");
                 String novoNome = scanner.nextLine();
                 produto.setNomeProduto(novoNome);
-                System.out.println("O nome foi alterado para: " + produto.getNomeProduto());
-                break;
-            }
         }
+
+        
         if (!encontrado) {
             System.out.println("Produto não encontrado");
         }
@@ -324,5 +326,6 @@ public class Estoque {
 
     }
 }
+
 
 
